@@ -1,9 +1,12 @@
-import { classModule, init, styleModule, h } from "snabbdom";
+import { classModule, init, styleModule } from "snabbdom";
+import { initializeGamestate } from "./gamestate";
+
+import board from "./board";
 
 const patch = init([classModule, styleModule]);
 
 const app = document.getElementById("app");
 
-const vnode = h("div#app", { style: { color: "red" } }, h("h1", "Hello world"));
+const gameState = initializeGamestate();
 
-patch(app!, vnode)
+patch(app!, board(gameState));

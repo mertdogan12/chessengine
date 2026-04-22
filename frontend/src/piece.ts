@@ -1,5 +1,5 @@
 import { h, type VNode } from "snabbdom";
-import { type Bitboard, get_xy, get_xys } from "./bitboard";
+import { type Bitboard, get_xys } from "./bitboard";
 
 type Color = "white" | "black";
 type PieceType = "pawn" | "rook" | "knight" | "bishop" | "queen" | "king";
@@ -28,10 +28,4 @@ const renderSinglePiece = (piece: Piece, x: number, y: number): VNode =>
     },
   });
 
-const renderMultiplePieces = (pieces: Piece): VNode[] =>
-  get_xys(pieces.position).map(([x, y]) => renderSinglePiece(pieces, x, y));
-
-export default (piece: Piece): VNode[] =>
-  piece.type == "pawn"
-    ? renderMultiplePieces(piece)
-    : [renderSinglePiece(piece, ...get_xy(piece.position))];
+export default (piece: Piece): VNode[] => get_xys(piece.position).map(([x, y]) => renderSinglePiece(piece, x, y));

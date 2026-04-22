@@ -24,12 +24,9 @@ export const initializeGamestate = (): GameState => {
 };
 
 const getRow = (color: "white" | "black", y: number): Piece[] => [
-  { color, type: "rook", position: get_bitboard(0, y) },
-  { color, type: "knight", position: get_bitboard(1, y) },
-  { color, type: "bishop", position: get_bitboard(2, y) },
+  { color, type: "rook", position: get_bitboard(0, y) | get_bitboard(7, y) },
+  { color, type: "knight", position: get_bitboard(1, y) | get_bitboard(6, y) },
+  { color, type: "bishop", position: get_bitboard(2, y) | get_bitboard(5, y) },
   { color, type: "queen", position: get_bitboard(3, y) },
   { color, type: "king", position: get_bitboard(4, y) },
-  { color, type: "bishop", position: get_bitboard(5, y) },
-  { color, type: "knight", position: get_bitboard(6, y) },
-  { color, type: "rook", position: get_bitboard(7, y) },
 ];

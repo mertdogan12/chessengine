@@ -1,28 +1,35 @@
-import { type Piece, type Position } from "./piece";
+import { type Bitboard, get_bitboard } from "./bitboard";
+import { type Piece } from "./piece";
 
-export type GameState = Map<Position, Piece>;
+export type GameState = Piece[];
 
-export function initializeGamestate(): GameState {
-  const state: GameState = new Map();
+export const initializeGamestate = (): GameState => {
+  const state: Piece[] = [];
 
-  setFistRow(state, "white", 0);
-  setFistRow(state, "black", 7);
+  state.push(...getRow("black", 7));
+  state.push(...getRow("white", 0));
+
+  var white_pawns: Bitboard = 0n;
+  var black_pawns: Bitboard = 0n;
 
   for (let i = 0; i < 8; i++) {
-    state.set([i, 1], { color: "white" , type: "pawn" });
-    state.set([i, 6], { color: "black" , type: "pawn" });
+    white_pawns |= get_bitboard(i, 1);
+    black_pawns |= get_bitboard(i, 6);
   }
 
-  return state;
-}
+  state.push({ color: "white", type: "pawn", position: white_pawns });
+  state.push({ color: "black", type: "pawn", position: black_pawns });
 
-function setFistRow(state: GameState, color: "white" | "black", y: number) {
-  state.set([0, y], { color, type: "rook" });
-  state.set([1, y], { color, type: "knight" });
-  state.set([2, y], { color, type: "bishop" });
-  state.set([3, y], { color, type: "queen" });
-  state.set([4, y], { color, type: "king" });
-  state.set([5, y], { color, type: "bishop" });
-  state.set([6, y], { color, type: "knight" });
-  state.set([7, y], { color, type: "rook" });
-}
+  return state;
+};
+
+const getRow = (color: "white" | "black", y: number): Piece[] => [
+  { color, type: "rook", position: get_bitboard(0, y) },
+  { color, type: "knight", position: get_bitboard(1, y) },
+  { color, type: "bishop", position: get_bitboard(2, y) },
+  { color, type: "queen", position: get_bitboard(3, y) },
+  { color, type: "king", position: get_bitboard(4, y) },
+  { color, type: "bishop", position: get_bitboard(5, y) },
+  { color, type: "knight", position: get_bitboard(6, y) },
+  { color, type: "rook", position: get_bitboard(7, y) },
+];

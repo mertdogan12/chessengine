@@ -3,8 +3,8 @@ import { type GameState } from "./gamestate";
 
 import figure from "./piece";
 
-export default function (gameState: GameState): VNode {
-  return h(
+export default (gameState: GameState): VNode =>
+  h(
     "div",
     {
       style: {
@@ -32,7 +32,6 @@ export default function (gameState: GameState): VNode {
           borderRadius: "1vw",
         },
       },
-      Array.from(gameState.entries()).map(([position, piece]) => figure(piece, position)),
+      gameState.map(figure).flat(),
     ),
   );
-}

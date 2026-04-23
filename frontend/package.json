@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "vitest"
   },
   "devDependencies": {
     "typescript": "~6.0.2",
@@ -14,6 +15,7 @@
   },
   "dependencies": {
     "prettier": "^3.8.3",
-    "snabbdom": "^3.6.3"
+    "snabbdom": "^3.6.3",
+    "vitest": "^4.1.5"
   }
 }

@@ -33,7 +33,7 @@ export const get_xy = (bb: Bitboard): [number, number] => {
 
   const tailingZeros = ctz64(lastbit) ^ 63;
 
-  const x = tailingZeros % 8;
+  const x = tailingZeros % 8 ^ 7;
   const y = Math.floor(tailingZeros / 8);
 
   return [x, y];
@@ -65,4 +65,4 @@ export const get_xys = (bb: Bitboard): [number, number][] => {
  * @returns the bitboard representation of the position
  */
 export const get_bitboard = (x: number, y: number): Bitboard =>
-  1n << BigInt(y * 8 + x);
+  1n << BigInt(y * 8 + x ^ 7);

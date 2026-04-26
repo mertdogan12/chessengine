@@ -1,11 +1,13 @@
 import { h, type VNode } from "snabbdom";
-import { type GameState } from "./gamestate";
+import { type GameState } from "../gamestate";
 
 import figure from "./piece";
+import field from "./field";
+import { get_possible_moves } from "../logic/possible_move";
 
 export default (gameState: GameState): VNode =>
   h(
-    "div",
+    "div#board",
     {
       style: {
         minHeight: "100vh",
@@ -32,6 +34,9 @@ export default (gameState: GameState): VNode =>
           borderRadius: "1vw",
         },
       },
-      gameState.map(figure).flat(),
+      [
+        gameState.pieces.map(figure).flat(),
+        gameState.selectedPiece ? field(get_possible_moves(gameState.selectedPiece)).flat() : []
+      ].flat(),
     ),
   );

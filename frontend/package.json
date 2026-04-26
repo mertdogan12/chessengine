@@ -7,9 +7,10 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "test": "vitest"
+    "test": "vitest --environment jsdom"
   },
   "devDependencies": {
+    "jsdom": "^29.0.2",
     "typescript": "~6.0.2",
     "vite": "^8.0.8"
   },

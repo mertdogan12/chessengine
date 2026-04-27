@@ -20,4 +20,4 @@ test("get_xys returns the correct coordinates", () =>
   ] as [number, number][]));
 
 test("get_bitboard returns the correct bitboard", () =>
-  expect(get_bitboard(2, 1)).toEqual(0b00100000_00000000n));
+  expect(get_bitboard(5, 1)).toEqual(0b00100000_00000000n));

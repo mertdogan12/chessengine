@@ -65,4 +65,4 @@ export const get_xys = (bb: Bitboard): [number, number][] => {
  * @returns the bitboard representation of the position
  */
 export const get_bitboard = (x: number, y: number): Bitboard =>
-  1n << BigInt((y * 8 + x) ^ 7);
+  1n << BigInt((y * 8 + x));

@@ -1,6 +1,6 @@
-import { get_bitboard } from "./logic/bitboard";
+import { get_bitboard, get_xy } from "./logic/bitboard";
 import { type Piece } from "./components/piece";
-import { classModule, init, styleModule, toVNode, type VNode } from "snabbdom";
+import { classModule, eventListenersModule, init, styleModule, toVNode, type VNode } from "snabbdom";
 
 import board from "./components/board";
 
@@ -9,9 +9,17 @@ export interface GameState {
   selectedPiece: Piece | null,
 };
 
-var app: VNode = toVNode(document.getElementById("app")!);
+const el = document.getElementById("app");
+let app: VNode | null = el ? toVNode(el) : null;
 
-export var gamestate: GameState;
+var gamestate: GameState;
+
+export const set_selected_piece = (piece: Piece, x: number, y: number) => {
+  var p = { ...piece };
+  p.position = piece.position & get_bitboard(x, y);
+  gamestate.selectedPiece = p;
+  patch();
+};
 
 export const initialize_gamestate = () => {
   gamestate = {
@@ -41,7 +49,9 @@ const get_row = (color: "white" | "black", y: number): Piece[] => [
 ];
 
 const patch = () => {
-  const patch = init([classModule, styleModule]);
+  const patchFn = init([classModule, styleModule, eventListenersModule]);
 
-  app = patch(app, board(gamestate));
+  if (!app) return;
+
+  app = patchFn(app, board(gamestate));
 }

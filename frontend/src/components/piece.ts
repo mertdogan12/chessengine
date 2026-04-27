@@ -1,5 +1,6 @@
 import { h, type VNode } from "snabbdom";
 import { type Bitboard, get_xys } from "../logic/bitboard";
+import { set_selected_piece } from "../gamestate";
 
 type Color = "white" | "black";
 type PieceType = "pawn" | "rook" | "knight" | "bishop" | "queen" | "king";
@@ -14,7 +15,7 @@ const render_single_piece = (piece: Piece, x: number, y: number): VNode =>
   h("figure." + piece.type, {
     on: {
       click: () => {
-        console.log(`Clicked on ${piece.color} ${piece.type} at (${x}, ${y})`);
+        set_selected_piece(piece, x, y);
       }
     },
     style: {

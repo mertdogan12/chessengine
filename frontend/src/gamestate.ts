@@ -1,4 +1,4 @@
-import { get_bitboard, get_xy } from "./logic/bitboard";
+import { get_bitboard } from "./logic/bitboard";
 import { type Piece } from "./components/piece";
 import { classModule, eventListenersModule, init, styleModule, toVNode, type VNode } from "snabbdom";
 

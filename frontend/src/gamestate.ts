@@ -1,5 +1,5 @@
 import { get_bitboard } from "./logic/bitboard";
-import { type Piece } from "./components/piece";
+import { type Piece, equal } from "./components/piece";
 import { classModule, eventListenersModule, init, styleModule, toVNode, type VNode } from "snabbdom";
 
 import board from "./components/board";
@@ -17,9 +17,14 @@ var gamestate: GameState;
 export const set_selected_piece = (piece: Piece, x: number, y: number) => {
   var p = { ...piece };
   p.position = piece.position & get_bitboard(x, y);
+
+  if (equal(gamestate.selectedPiece, p)) return;
+
   gamestate.selectedPiece = p;
   patch();
 };
+
+export const get_pieces = (): Piece[] => [...gamestate.pieces];
 
 export const initialize_gamestate = () => {
   gamestate = {
@@ -32,10 +37,6 @@ export const initialize_gamestate = () => {
 
   gamestate.pieces.push({ color: "white", type: "pawn", position: 0x000000000000ff00n });
   gamestate.pieces.push({ color: "black", type: "pawn", position: 0x00ff000000000000n });
-
-  const test_pievce: Piece = { color: "white", type: "pawn", position: get_bitboard(4, 4) };
-  gamestate.pieces.push(test_pievce);
-  gamestate.selectedPiece = test_pievce;
 
   patch();
 };

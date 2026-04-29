@@ -35,5 +35,10 @@ const render_single_piece = (piece: Piece, x: number, y: number): VNode =>
   },
 );
 
+export const equal = (a: Piece | null, b: Piece | null): boolean => {
+  if (a === null || b === null) return a === b;
+  return a.color === b.color && a.type === b.type && a.position === b.position;
+};
+
 export default (piece: Piece): VNode[] =>
 get_xys(piece.position).map(([x, y]) => render_single_piece(piece, x, y));

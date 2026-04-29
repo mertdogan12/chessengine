@@ -18,8 +18,6 @@ export const set_selected_piece = (piece: Piece, x: number, y: number) => {
   var p = { ...piece };
   p.position = piece.position & get_bitboard(x, y);
 
-  if (equal(gamestate.selectedPiece, p)) return;
-
   gamestate.selectedPiece = p;
   patch();
 };

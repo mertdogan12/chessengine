@@ -2,12 +2,26 @@ import { h, type VNode } from "snabbdom";
 import { type Bitboard, get_xys } from "../logic/bitboard";
 import { set_selected_piece } from "../gamestate";
 
-type Color = "white" | "black";
-type PieceType = "pawn" | "rook" | "knight" | "bishop" | "queen" | "king";
+export const Color = {
+  White: 0,
+  Black: 1,
+} as const;
+
+export const PieceType = {
+  Pawn: 0,
+  Rook: 1,
+  Knight: 2,
+  Bishop: 3,
+  Queen: 4,
+  King: 5
+} as const;
+
+// export type Color = typeof Color.White | typeof Color.Black;
+// export type PieceType = typeof PieceType.Pawn | typeof PieceType.Rook | typeof PieceType.Knight | typeof PieceType.Bishop | typeof PieceType.Queen | typeof PieceType.King;
 
 export interface Piece {
-  color: Color;
-  type: PieceType;
+  color: typeof Color[keyof typeof Color];
+  type: typeof PieceType[keyof typeof PieceType];
   position: Bitboard;
 }
 

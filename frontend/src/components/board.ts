@@ -2,8 +2,7 @@ import { h, type VNode } from "snabbdom";
 import { type GameState } from "../gamestate";
 
 import figure from "./piece";
-import field from "./field";
-import { get_possible_moves } from "../logic/possible_move";
+import field from "./move";
 
 export default (gameState: GameState): VNode =>
   h(
@@ -35,8 +34,8 @@ export default (gameState: GameState): VNode =>
         },
       },
       [
-        gameState.pieces.map(figure).flat(),
-        gameState.selectedPiece ? field(get_possible_moves(gameState.selectedPiece)).flat() : []
+        gameState.pieces.flat().map(figure).flat(),
+        gameState.selectedPiece ? field(gameState.selectedPiece).flat() : []
       ].flat(),
     ),
   );

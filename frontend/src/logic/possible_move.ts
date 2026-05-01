@@ -1,5 +1,5 @@
 import { type Bitboard } from "./bitboard";
-import { type Piece } from "../components/piece";
+import { Color, PieceType, type Piece } from "../components/piece";
 import { get_pieces } from "../gamestate";
 
 const FILE_A: Bitboard = 0x0101010101010101n;
@@ -11,11 +11,11 @@ export const get_possible_moves = (piece: Piece): Bitboard => {
     let moves: Bitboard;
 
     switch(piece.type) {
-        case "pawn":
-            moves = piece.position << 8n;
+        case PieceType.Pawn:
+            moves = piece.position << (piece.color === Color.White ? 8n : -8n);
             break;
 
-        case "knight":
+        case PieceType.Knight:
             moves = piece.position << 17n & ~FILE_A |
                 piece.position << 15n & ~FILE_H |
                 piece.position << 10n & ~FILE_AB |
@@ -26,14 +26,17 @@ export const get_possible_moves = (piece: Piece): Bitboard => {
                 piece.position >> 6n & ~FILE_AB;
             break;
 
+        case PieceType.Bishop:
+            moves = 0n;
+
         default:
             return 0n;
     }
 
-    const whitePieces = get_pieces()
-        .filter(p => p.color === "white")
+    const coloredPieces = get_pieces()
+        .filter(p => p.color === piece.color)
         .map(p => p.position)
         .reduce((a, b) => a | b, 0n);
 
-    return moves & ~whitePieces;
+    return moves & ~coloredPieces;
 };

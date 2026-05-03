@@ -20,7 +20,10 @@ export const get_possible_moves = (piece: Piece): Bitboard => {
 
     switch(piece.type) {
         case PieceType.Pawn:
-            moves = piece.position << (piece.color === Color.White ? 8n : -8n);
+            moves = (piece.position << (piece.color === Color.White ? 8n : -8n)) & ~opponentColorPieces;
+            var attacks = (piece.position << (piece.color === Color.White ? 7n : -9n)) & ~FILE_H & opponentColorPieces |
+                (piece.position << (piece.color === Color.White ? 9n : -7n)) & ~FILE_A & opponentColorPieces;
+            moves |= attacks;
             break;
 
         case PieceType.Knight:
@@ -32,6 +35,7 @@ export const get_possible_moves = (piece: Piece): Bitboard => {
                 piece.position >> 15n & ~FILE_A |
                 piece.position >> 10n & ~FILE_GH |
                 piece.position >> 6n & ~FILE_AB;
+                console.log(moves.toString(2));
             break;
 
         case PieceType.Rook:

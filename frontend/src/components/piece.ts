@@ -16,9 +16,6 @@ export const PieceType = {
   King: 5
 } as const;
 
-// export type Color = typeof Color.White | typeof Color.Black;
-// export type PieceType = typeof PieceType.Pawn | typeof PieceType.Rook | typeof PieceType.Knight | typeof PieceType.Bishop | typeof PieceType.Queen | typeof PieceType.King;
-
 export interface Piece {
   color: typeof Color[keyof typeof Color];
   type: typeof PieceType[keyof typeof PieceType];

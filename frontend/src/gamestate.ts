@@ -15,6 +15,12 @@ let app: VNode | null = el ? toVNode(el) : null;
 var gamestate: GameState;
 
 export const set_selected_piece = (piece: Piece, x: number, y: number) => {
+  if (gamestate.selectedPiece === piece) {
+    gamestate.selectedPiece = null;
+    patch();
+    return;
+  }
+
   var p = { ...piece };
   p.position = piece.position & get_bitboard(x, y);
 
@@ -34,7 +40,7 @@ export const move_piece = (piece: Piece | null, x: number, y: number) => {
   patch();
 }
 
-export const get_pieces = (): Piece[] => [...gamestate.pieces[0], ...gamestate.pieces[1]];
+export const get_pieces = (color: typeof Color[keyof typeof Color]): Piece[] => gamestate.pieces[color];
 
 export const initialize_gamestate = () => {
   gamestate = {

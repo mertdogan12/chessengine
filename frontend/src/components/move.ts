@@ -1,5 +1,5 @@
 import { h, type VNode } from "snabbdom";
-import { get_xys, type Bitboard } from "../logic/bitboard";
+import { get_xys } from "../logic/bitboard";
 import { type Piece } from "./piece";
 import { get_possible_moves } from "../logic/possible_move";
 import { move_piece } from "../gamestate";

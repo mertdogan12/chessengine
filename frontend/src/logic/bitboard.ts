@@ -66,3 +66,6 @@ export const get_xys = (bb: Bitboard): [number, number][] => {
  */
 export const get_bitboard = (x: number, y: number): Bitboard =>
   1n << BigInt((y * 8 + x));
+
+
+export const o2trick = (o: Bitboard, r: Bitboard, mask: Bitboard): Bitboard => (((o & mask) - 2n * r) ^ o) & mask;

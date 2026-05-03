@@ -1,4 +1,4 @@
-import { type Bitboard } from "./bitboard";
+import { get_xy, o2trick, type Bitboard } from "./bitboard";
 import { Color, PieceType, type Piece } from "../components/piece";
 import { get_pieces } from "../gamestate";
 
@@ -9,6 +9,14 @@ const FILE_GH = FILE_H | FILE_H >> 1n;
 
 export const get_possible_moves = (piece: Piece): Bitboard => {
     let moves: Bitboard;
+
+    const ownColorPieces = get_pieces(piece.color)
+        .map(p => p.position)
+        .reduce((a, b) => a | b, 0n);
+
+    const opponentColorPieces = get_pieces((piece.color + 1) % 2 as typeof Color[keyof typeof Color])
+        .map(p => p.position)
+        .reduce((a, b) => a | b, 0n);
 
     switch(piece.type) {
         case PieceType.Pawn:
@@ -26,17 +34,15 @@ export const get_possible_moves = (piece: Piece): Bitboard => {
                 piece.position >> 6n & ~FILE_AB;
             break;
 
-        case PieceType.Bishop:
-            moves = 0n;
+        case PieceType.Rook:
+            const x = get_xy(piece.position)[0];
+            const mask = FILE_A << BigInt(x);
+            moves = o2trick(opponentColorPieces | ownColorPieces, piece.position, mask);
+            break;
 
         default:
             return 0n;
     }
 
-    const coloredPieces = get_pieces()
-        .filter(p => p.color === piece.color)
-        .map(p => p.position)
-        .reduce((a, b) => a | b, 0n);
-
-    return moves & ~coloredPieces;
+    return moves & ~ownColorPieces;
 };

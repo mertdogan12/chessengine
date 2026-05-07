@@ -35,7 +35,6 @@ export const get_possible_moves = (piece: Piece): Bitboard => {
                 piece.position >> 15n & ~FILE_A |
                 piece.position >> 10n & ~FILE_GH |
                 piece.position >> 6n & ~FILE_AB;
-                console.log(moves.toString(2));
             break;
 
         case PieceType.Rook:
@@ -48,5 +47,5 @@ export const get_possible_moves = (piece: Piece): Bitboard => {
             return 0n;
     }
 
-    return moves & ~ownColorPieces;
+    return moves & ~ownColorPieces & 0xFFFFFFFFFFFFFFFFn;
 };

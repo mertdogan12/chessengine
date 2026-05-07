@@ -1,4 +1,4 @@
-import { get_xy, o2trick, type Bitboard } from "./bitboard";
+import { get_xy, o2trick, reverse_bits, type Bitboard } from "./bitboard";
 import { Color, PieceType, type Piece } from "../components/piece";
 import { get_pieces } from "../gamestate";
 
@@ -7,6 +7,9 @@ const FILE_H: Bitboard = 0x8080808080808080n;
 const FILE_AB = FILE_A | FILE_A << 1n;
 const FILE_GH = FILE_H | FILE_H >> 1n;
 const FILE_1: Bitboard = 0x00000000000000FFn;
+
+const sliding_moves = (pieces: Bitboard, position: Bitboard, mask: Bitboard): Bitboard => o2trick(pieces, position, mask) |
+    reverse_bits(o2trick(reverse_bits(pieces), reverse_bits(position), reverse_bits(mask)));
 
 export const get_possible_moves = (piece: Piece): Bitboard => {
     let moves: Bitboard;
@@ -38,13 +41,15 @@ export const get_possible_moves = (piece: Piece): Bitboard => {
                 piece.position >> 6n & ~FILE_AB;
             break;
 
+        case PieceType.Queen:
         case PieceType.Rook:
             const x = get_xy(piece.position)[0];
             const y = get_xy(piece.position)[1];
             const maskH = FILE_A << BigInt(x);
             const maskV = FILE_1 << BigInt(y * 8);
-            moves = o2trick(opponentColorPieces | ownColorPieces, piece.position, maskH);
-            moves |= o2trick(opponentColorPieces | ownColorPieces, piece.position, maskV);
+
+            moves = sliding_moves(opponentColorPieces | ownColorPieces, piece.position, maskV) |
+                sliding_moves(opponentColorPieces | ownColorPieces, piece.position, maskH);
             break;
 
         default:

@@ -70,4 +70,14 @@ export const get_bitboard = (x: number, y: number): Bitboard =>
 
 export const o2trick = (o: Bitboard, r: Bitboard, mask: Bitboard): Bitboard => (((o & mask) - 2n * r) ^ o) & mask;
 
-export const reverse_bits = (bb: Bitboard): Bitboard => {}
+export const reverse_bits = (bb: Bitboard): Bitboard => {
+  var out = 0n;
+
+  for (let i = 0; i < 64; i++) {
+    out <<= 1n;
+    out |= bb & 1n;
+    bb >>= 1n;
+  }
+
+  return out;
+}

@@ -69,3 +69,5 @@ export const get_bitboard = (x: number, y: number): Bitboard =>
 
 
 export const o2trick = (o: Bitboard, r: Bitboard, mask: Bitboard): Bitboard => (((o & mask) - 2n * r) ^ o) & mask;
+
+export const reverse_bits = (bb: Bitboard): Bitboard => {}

@@ -6,6 +6,7 @@ const FILE_A: Bitboard = 0x0101010101010101n;
 const FILE_H: Bitboard = 0x8080808080808080n;
 const FILE_AB = FILE_A | FILE_A << 1n;
 const FILE_GH = FILE_H | FILE_H >> 1n;
+const FILE_1: Bitboard = 0x00000000000000FFn;
 
 export const get_possible_moves = (piece: Piece): Bitboard => {
     let moves: Bitboard;
@@ -39,8 +40,11 @@ export const get_possible_moves = (piece: Piece): Bitboard => {
 
         case PieceType.Rook:
             const x = get_xy(piece.position)[0];
-            const mask = FILE_A << BigInt(x);
-            moves = o2trick(opponentColorPieces | ownColorPieces, piece.position, mask);
+            const y = get_xy(piece.position)[1];
+            const maskH = FILE_A << BigInt(x);
+            const maskV = FILE_1 << BigInt(y * 8);
+            moves = o2trick(opponentColorPieces | ownColorPieces, piece.position, maskH);
+            moves |= o2trick(opponentColorPieces | ownColorPieces, piece.position, maskV);
             break;
 
         default:

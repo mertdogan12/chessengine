@@ -12,6 +12,9 @@ const sliding_moves = (pieces: Bitboard, position: Bitboard, mask: Bitboard): Bi
     reverse_bits(o2trick(reverse_bits(pieces), reverse_bits(position), reverse_bits(mask)));
 
 export const get_possible_moves = (piece: Piece): Bitboard => {
+    const x = get_xy(piece.position)[0];
+    const y = get_xy(piece.position)[1];
+
     let moves: Bitboard;
 
     const ownColorPieces = get_pieces(piece.color)
@@ -43,13 +46,16 @@ export const get_possible_moves = (piece: Piece): Bitboard => {
 
         case PieceType.Queen:
         case PieceType.Rook:
-            const x = get_xy(piece.position)[0];
-            const y = get_xy(piece.position)[1];
             const maskH = FILE_A << BigInt(x);
             const maskV = FILE_1 << BigInt(y * 8);
 
             moves = sliding_moves(opponentColorPieces | ownColorPieces, piece.position, maskV) |
                 sliding_moves(opponentColorPieces | ownColorPieces, piece.position, maskH);
+            break;
+
+        case PieceType.Bishop:
+            const mask = 0x8040201008040201n << BigInt((x - y))
+            moves = o2trick(opponentColorPieces | ownColorPieces, piece.position, mask);
             break;
 
         default:

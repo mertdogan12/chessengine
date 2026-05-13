@@ -7,6 +7,7 @@ const FILE_H: Bitboard = 0x8080808080808080n;
 const FILE_AB = FILE_A | FILE_A << 1n;
 const FILE_GH = FILE_H | FILE_H >> 1n;
 const FILE_1: Bitboard = 0x00000000000000FFn;
+const FILE_8: Bitboard = 0xFF00000000000000n;
 
 const sliding_moves = (pieces: Bitboard, position: Bitboard, mask: Bitboard): Bitboard => o2trick(pieces, position, mask) |
     reverse_bits(o2trick(reverse_bits(pieces), reverse_bits(position), reverse_bits(mask)));
@@ -54,8 +55,19 @@ export const get_possible_moves = (piece: Piece): Bitboard => {
             break;
 
         case PieceType.Bishop:
-            const mask = 0x8040201008040201n << BigInt((x - y))
-            moves = o2trick(opponentColorPieces | ownColorPieces, piece.position, mask);
+            let mask = 0x8040201008040201n << BigInt((x - y));
+            let mask2 = mask;
+
+            for (let i = 0; i < 7; i++) {
+                if (i < x) {
+                   mask &= ~(FILE_A << BigInt(i));
+                } else if (i > y) {
+                    mask2 &= ~(FILE_H << BigInt(i));
+                }
+            }
+
+            moves = o2trick(opponentColorPieces | ownColorPieces, piece.position, mask) | 
+                reverse_bits(o2trick(reverse_bits(opponentColorPieces | ownColorPieces), reverse_bits(piece.position), reverse_bits(mask2)));
             break;
 
         default:

@@ -17,6 +17,7 @@ export interface GameState {
   pieces: Piece[][];
   selectedPiece: Piece | null;
   rochade: [boolean, boolean];
+  dead: (typeof PieceType)[keyof typeof PieceType][][];
 }
 
 const el = document.getElementById("app");
@@ -114,6 +115,13 @@ export const move_piece = (piece: Piece | null, x: number, y: number) => {
 
   const newPosition = get_bitboard(x, y);
 
+  for (const p of get_opponent_pieces(piece.color)) {
+    if ((p.position & newPosition) !== 0n) {
+      p.position ^= newPosition;
+      gamestate.dead[p.color].push(p.type);
+    }
+  }
+
   gamestate.pieces[piece.color][piece.type].position ^= piece.position;
   gamestate.pieces[piece.color][piece.type].position |= newPosition;
 
@@ -134,6 +142,7 @@ export const initialize_gamestate = () => {
     pieces: [[], []],
     rochade: [false, false],
     selectedPiece: null,
+    dead: [[], []],
   };
 
   gamestate.pieces[Color.White][PieceType.Pawn] = {

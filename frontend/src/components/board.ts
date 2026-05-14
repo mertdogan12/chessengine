@@ -35,7 +35,7 @@ export default (gameState: GameState): VNode =>
       },
       [
         gameState.pieces.flat().map(figure).flat(),
-        gameState.selectedPiece ? field(gameState.selectedPiece).flat() : []
+        gameState.selectedPiece ? field(gameState.selectedPiece).flat() : [],
       ].flat(),
     ),
   );

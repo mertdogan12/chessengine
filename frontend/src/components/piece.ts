@@ -13,21 +13,21 @@ export const PieceType = {
   Knight: 2,
   Bishop: 3,
   Queen: 4,
-  King: 5
+  King: 5,
 } as const;
 
 export interface Piece {
-  color: typeof Color[keyof typeof Color];
-  type: typeof PieceType[keyof typeof PieceType];
+  color: (typeof Color)[keyof typeof Color];
+  type: (typeof PieceType)[keyof typeof PieceType];
   position: Bitboard;
 }
 
-const render_single_piece = (piece: Piece, x: number, y: number): VNode => 
+const render_single_piece = (piece: Piece, x: number, y: number): VNode =>
   h("figure." + piece.type, {
     on: {
       click: () => {
         set_selected_piece(piece, x, y);
-      }
+      },
     },
     style: {
       width: "100%",
@@ -43,8 +43,7 @@ const render_single_piece = (piece: Piece, x: number, y: number): VNode =>
       justifyContent: "center",
       margin: "0px",
     },
-  },
-);
+  });
 
 export const equal = (a: Piece | null, b: Piece | null): boolean => {
   if (a === null || b === null) return a === b;
@@ -52,4 +51,4 @@ export const equal = (a: Piece | null, b: Piece | null): boolean => {
 };
 
 export default (piece: Piece): VNode[] =>
-get_xys(piece.position).map(([x, y]) => render_single_piece(piece, x, y));
+  get_xys(piece.position).map(([x, y]) => render_single_piece(piece, x, y));

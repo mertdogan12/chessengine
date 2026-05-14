@@ -65,10 +65,10 @@ export const get_xys = (bb: Bitboard): [number, number][] => {
  * @returns the bitboard representation of the position
  */
 export const get_bitboard = (x: number, y: number): Bitboard =>
-  1n << BigInt((y * 8 + x));
+  1n << BigInt(y * 8 + x);
 
-
-export const o2trick = (o: Bitboard, r: Bitboard, mask: Bitboard): Bitboard => (((o & mask) - 2n * r) ^ o) & mask;
+export const o2trick = (o: Bitboard, r: Bitboard, mask: Bitboard): Bitboard =>
+  (((o & mask) - 2n * r) ^ o) & mask;
 
 export const reverse_bits = (bb: Bitboard): Bitboard => {
   var out = 0n;
@@ -80,4 +80,4 @@ export const reverse_bits = (bb: Bitboard): Bitboard => {
   }
 
   return out;
-}
+};

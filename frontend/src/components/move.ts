@@ -19,10 +19,11 @@ const render_single = (x: number, y: number, piece: Piece | null): VNode =>
       alignItems: "center",
       justifyContent: "center",
       margin: "0px",
+      opacity: "0.8",
     },
   });
 
 export default (piece: Piece): VNode[] =>
-  get_xys(get_possible_moves(piece)).map(([x, y]) =>
+  get_xys(get_possible_moves(piece, false)).map(([x, y]) =>
     render_single(x, y, piece),
   );

@@ -9,17 +9,62 @@ const FILE_GH = FILE_H | (FILE_H >> 1n);
 const FILE_1: Bitboard = 0x00000000000000ffn;
 const FILE_8: Bitboard = 0xff00000000000000n;
 
-const sliding_moves = (
+const rock_moves = (
+  x: number,
+  y: number,
   pieces: Bitboard,
-  position: Bitboard,
-  mask: Bitboard,
-): Bitboard =>
-  o2trick(pieces, position, mask) |
-  reverse_bits(
-    o2trick(reverse_bits(pieces), reverse_bits(position), reverse_bits(mask)),
-  );
+  piece: Bitboard,
+): Bitboard => {
+  const maskH = FILE_A << BigInt(x);
+  const maskV = FILE_1 << BigInt(y * 8);
 
-export const get_possible_moves = (piece: Piece): Bitboard => {
+  return (
+    o2trick(pieces, piece, maskV) |
+    reverse_bits(
+      o2trick(reverse_bits(pieces), reverse_bits(piece), reverse_bits(maskV)),
+    ) |
+    o2trick(pieces, piece, maskH) |
+    reverse_bits(
+      o2trick(reverse_bits(pieces), reverse_bits(piece), reverse_bits(maskH)),
+    )
+  );
+};
+
+const bishop_moves = (
+  x: number,
+  y: number,
+  pieces: Bitboard,
+  piece: Bitboard,
+): Bitboard => {
+  let maskRD = 0x8040201008040201n << BigInt(x - y);
+  let maskRD2 = maskRD;
+
+  let maskLD = 0x0102040810204080n << BigInt(x + y - 7);
+  let maskLD2 = maskLD;
+
+  for (let i = 0; i < 8; i++) {
+    if (i < x) {
+      maskRD &= ~(FILE_A << BigInt(i));
+      maskLD2 &= ~(FILE_A << BigInt(i));
+    } else if (i > x) {
+      maskRD2 &= ~(FILE_A << BigInt(i));
+      maskLD &= ~(FILE_A << BigInt(i));
+    }
+  }
+
+  return (
+    o2trick(pieces, piece, maskRD) |
+    reverse_bits(
+      o2trick(reverse_bits(pieces), reverse_bits(piece), reverse_bits(maskRD2)),
+    ) |
+    o2trick(pieces, piece, maskLD) |
+    reverse_bits(
+      o2trick(reverse_bits(pieces), reverse_bits(piece), reverse_bits(maskLD2)),
+    )
+  );
+};
+
+export const get_possible_moves = (piece: Piece, onlyAttacks: boolean): Bitboard => {
   const x = get_xy(piece.position)[0];
   const y = get_xy(piece.position)[1];
 
@@ -37,9 +82,10 @@ export const get_possible_moves = (piece: Piece): Bitboard => {
 
   switch (piece.type) {
     case PieceType.Pawn:
-      moves =
+      moves = onlyAttacks ? 0n :
         (piece.position << (piece.color === Color.White ? 8n : -8n)) &
         ~opponentColorPieces;
+
       var attacks =
         ((piece.position << (piece.color === Color.White ? 7n : -9n)) &
           ~FILE_H &
@@ -47,7 +93,16 @@ export const get_possible_moves = (piece: Piece): Bitboard => {
         ((piece.position << (piece.color === Color.White ? 9n : -7n)) &
           ~FILE_A &
           opponentColorPieces);
+
       moves |= attacks;
+
+      if ((piece.color === Color.White && y === 1) || (piece.color === Color.Black && y === 6)) {
+        moves |=
+          piece.position << (piece.color === Color.White ? 16n : -16n) &
+          ~opponentColorPieces &
+          ~(((piece.position << (piece.color === Color.White ? 8n : -8n) & (opponentColorPieces | ownColorPieces))) 
+            << (piece.color === Color.White ? 8n : -8n));
+      }
       break;
 
     case PieceType.Knight:
@@ -63,57 +118,44 @@ export const get_possible_moves = (piece: Piece): Bitboard => {
       break;
 
     case PieceType.Queen:
-    case PieceType.Rook:
-      const maskH = FILE_A << BigInt(x);
-      const maskV = FILE_1 << BigInt(y * 8);
-
       moves =
-        sliding_moves(
+        rock_moves(x, y, opponentColorPieces | ownColorPieces, piece.position) |
+        bishop_moves(
+          x,
+          y,
           opponentColorPieces | ownColorPieces,
           piece.position,
-          maskV,
-        ) |
-        sliding_moves(
-          opponentColorPieces | ownColorPieces,
-          piece.position,
-          maskH,
         );
       break;
 
+    case PieceType.Rook:
+      moves = rock_moves(
+        x,
+        y,
+        opponentColorPieces | ownColorPieces,
+        piece.position,
+      );
+      break;
+
     case PieceType.Bishop:
-      let maskRD = 0x8040201008040201n << BigInt(x - y);
-      let maskRD2 = maskRD;
+      moves = bishop_moves(
+        x,
+        y,
+        opponentColorPieces | ownColorPieces,
+        piece.position,
+      );
+      break;
 
-      let maskLD = 0x0102040810204080n << BigInt(x + y - 7);
-      let maskLD2 = maskLD;
-
-      for (let i = 0; i < 8; i++) {
-        if (i < x) {
-          maskRD &= ~(FILE_A << BigInt(i));
-          maskLD2 &= ~(FILE_A << BigInt(i));
-        } else if (i > x) {
-          maskRD2 &= ~(FILE_A << BigInt(i));
-          maskLD &= ~(FILE_A << BigInt(i));
-        }
-      }
-
+    case PieceType.King:
       moves =
-        o2trick(opponentColorPieces | ownColorPieces, piece.position, maskRD) |
-        reverse_bits(
-          o2trick(
-            reverse_bits(opponentColorPieces | ownColorPieces),
-            reverse_bits(piece.position),
-            reverse_bits(maskRD2),
-          ),
-        ) |
-        o2trick(opponentColorPieces | ownColorPieces, piece.position, maskLD) |
-        reverse_bits(
-          o2trick(
-            reverse_bits(opponentColorPieces | ownColorPieces),
-            reverse_bits(piece.position),
-            reverse_bits(maskLD2),
-          ),
-        );
+        ((piece.position << 8n) & ~FILE_1) |
+        ((piece.position >> 8n) & ~FILE_8) |
+        ((piece.position << 1n) & ~FILE_A) |
+        ((piece.position >> 1n) & ~FILE_H) |
+        ((piece.position << 9n) & ~FILE_1 & ~FILE_A) |
+        ((piece.position << 7n) & ~FILE_1 & ~FILE_H) |
+        ((piece.position >> 9n) & ~FILE_8 & ~FILE_H) |
+        ((piece.position >> 7n) & ~FILE_8 & ~FILE_A);
       break;
 
     default:

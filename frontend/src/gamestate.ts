@@ -1,4 +1,4 @@
-import { get_bitboard } from "./logic/bitboard";
+import { get_bitboard, type Bitboard } from "./logic/bitboard";
 import { type Piece, Color, PieceType } from "./components/piece";
 import {
   classModule,
@@ -10,10 +10,13 @@ import {
 } from "snabbdom";
 
 import board from "./components/board";
+import { rochade_possible } from "./logic/possible_move";
+import { render_single_move } from "./components/move";
 
 export interface GameState {
   pieces: Piece[][];
   selectedPiece: Piece | null;
+  rochade: [boolean, boolean];
 }
 
 const el = document.getElementById("app");
@@ -21,7 +24,78 @@ let app: VNode | null = el ? toVNode(el) : null;
 
 var gamestate: GameState;
 
-export const set_selected_piece = (piece: Piece, x: number, y: number) => {
+export const rochade_vnodes = (): VNode[] => {
+  if (
+    !gamestate.selectedPiece ||
+    gamestate.selectedPiece.type !== PieceType.King || 
+    gamestate.rochade[gamestate.selectedPiece.color]
+  )
+    return [];
+
+  const possible = rochade_possible(gamestate.selectedPiece.color);
+  const vnodes: VNode[] = [];
+
+  if (possible[0]) {
+    vnodes.push(
+      render_single_move(
+        2,
+        gamestate.selectedPiece.color === Color.White ? 0 : 7,
+        () => rochade(gamestate.selectedPiece!.color, true),
+      ),
+    );
+  }
+  if (possible[1]) {
+    vnodes.push(
+      render_single_move(
+        6,
+        gamestate.selectedPiece.color === Color.White ? 0 : 7,
+        () => rochade(gamestate.selectedPiece!.color, false),
+      ),
+    );
+  }
+
+  return vnodes;
+};
+
+const rochade = (color: (typeof Color)[keyof typeof Color], long: boolean) => {
+  let kingPosition: Bitboard = 0n
+  let rookPosition: Bitboard = 0n
+  let rookOldPosition: Bitboard = 0n
+
+  const king = gamestate.pieces[color][PieceType.King];
+  const rook = gamestate.pieces[color][PieceType.Rook];
+
+  if (long) {
+    kingPosition = 0b100n;
+    rookPosition = 0b1000n;
+    rookOldPosition = 0b1n;
+  } else {
+    kingPosition = 0b1000000n;
+    rookPosition = 0b100000n;
+    rookOldPosition = 0b10000000n;
+  }
+
+  if (color === Color.Black) {
+    kingPosition <<= 56n;
+    rookPosition <<= 56n;
+    rookOldPosition <<= 56n;
+  }
+
+  king.position ^= king.position;
+  king.position |= kingPosition;
+
+  rook.position ^= rookOldPosition;
+  rook.position |= rookPosition;
+
+  gamestate.selectedPiece = null;
+  gamestate.rochade[color] = true;
+  patch();
+}
+
+export const set_selected_piece = (piece: Piece, x: number, y: number) => 
+  set_selected_piece_bitboard(piece, get_bitboard(x, y));
+
+const set_selected_piece_bitboard = (piece: Piece, position: Bitboard) => {
   if (gamestate.selectedPiece === piece) {
     gamestate.selectedPiece = null;
     patch();
@@ -29,7 +103,7 @@ export const set_selected_piece = (piece: Piece, x: number, y: number) => {
   }
 
   var p = { ...piece };
-  p.position = piece.position & get_bitboard(x, y);
+  p.position = position;
 
   gamestate.selectedPiece = p;
   patch();
@@ -51,9 +125,14 @@ export const get_pieces = (
   color: (typeof Color)[keyof typeof Color],
 ): Piece[] => gamestate.pieces[color];
 
+export const get_opponent_pieces = (
+  color: (typeof Color)[keyof typeof Color],
+) => get_pieces(((color + 1) % 2) as (typeof Color)[keyof typeof Color]);
+
 export const initialize_gamestate = () => {
   gamestate = {
     pieces: [[], []],
+    rochade: [false, false],
     selectedPiece: null,
   };
 

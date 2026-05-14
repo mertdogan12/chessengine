@@ -4,10 +4,14 @@ import { type Piece } from "./piece";
 import { get_possible_moves } from "../logic/possible_move";
 import { move_piece } from "../gamestate";
 
-const render_single = (x: number, y: number, piece: Piece | null): VNode =>
+export const render_single_move = (
+  x: number,
+  y: number,
+  callback: (x: number, y: number) => void,
+): VNode =>
   h("field", {
     on: {
-      click: () => move_piece(piece, x, y),
+      click: () => callback(x, y),
     },
     style: {
       width: "100%",
@@ -25,5 +29,5 @@ const render_single = (x: number, y: number, piece: Piece | null): VNode =>
 
 export default (piece: Piece): VNode[] =>
   get_xys(get_possible_moves(piece, false)).map(([x, y]) =>
-    render_single(x, y, piece),
+    render_single_move(x, y, () => move_piece(piece, x, y)),
   );

@@ -1,5 +1,5 @@
 import { h, type VNode } from "snabbdom";
-import { type GameState } from "../gamestate";
+import { rochade_vnodes, type GameState } from "../gamestate";
 
 import figure from "./piece";
 import field from "./move";
@@ -36,6 +36,7 @@ export default (gameState: GameState): VNode =>
       [
         gameState.pieces.flat().map(figure).flat(),
         gameState.selectedPiece ? field(gameState.selectedPiece).flat() : [],
+        rochade_vnodes(),
       ].flat(),
     ),
   );

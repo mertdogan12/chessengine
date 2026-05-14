@@ -1,6 +1,6 @@
 import { get_xy, o2trick, reverse_bits, type Bitboard } from "./bitboard";
 import { Color, PieceType, type Piece } from "../components/piece";
-import { get_pieces } from "../gamestate";
+import { get_opponent_pieces, get_pieces } from "../gamestate";
 
 const FILE_A: Bitboard = 0x0101010101010101n;
 const FILE_H: Bitboard = 0x8080808080808080n;
@@ -64,7 +64,17 @@ const bishop_moves = (
   );
 };
 
-export const get_possible_moves = (piece: Piece, onlyAttacks: boolean): Bitboard => {
+/**
+ * Get the possible moves for a single piece
+ *
+ * @param piece the piece to get the possible moves for
+ * @param onlyAttacks whether to only consider attacking moves
+ * @returns the possible moves for the piece
+ */
+export const get_possible_moves = (
+  piece: Piece,
+  onlyAttacks: boolean,
+): Bitboard => {
   const x = get_xy(piece.position)[0];
   const y = get_xy(piece.position)[1];
 
@@ -74,17 +84,16 @@ export const get_possible_moves = (piece: Piece, onlyAttacks: boolean): Bitboard
     .map((p) => p.position)
     .reduce((a, b) => a | b, 0n);
 
-  const opponentColorPieces = get_pieces(
-    ((piece.color + 1) % 2) as (typeof Color)[keyof typeof Color],
-  )
+  const opponentColorPieces = get_opponent_pieces(piece.color)
     .map((p) => p.position)
     .reduce((a, b) => a | b, 0n);
 
   switch (piece.type) {
     case PieceType.Pawn:
-      moves = onlyAttacks ? 0n :
-        (piece.position << (piece.color === Color.White ? 8n : -8n)) &
-        ~opponentColorPieces;
+      moves = onlyAttacks
+        ? 0n
+        : (piece.position << (piece.color === Color.White ? 8n : -8n)) &
+          ~opponentColorPieces;
 
       var attacks =
         ((piece.position << (piece.color === Color.White ? 7n : -9n)) &
@@ -96,12 +105,18 @@ export const get_possible_moves = (piece: Piece, onlyAttacks: boolean): Bitboard
 
       moves |= attacks;
 
-      if ((piece.color === Color.White && y === 1) || (piece.color === Color.Black && y === 6)) {
+      if (
+        (piece.color === Color.White && y === 1) ||
+        (piece.color === Color.Black && y === 6)
+      ) {
         moves |=
-          piece.position << (piece.color === Color.White ? 16n : -16n) &
+          (piece.position << (piece.color === Color.White ? 16n : -16n)) &
           ~opponentColorPieces &
-          ~(((piece.position << (piece.color === Color.White ? 8n : -8n) & (opponentColorPieces | ownColorPieces))) 
-            << (piece.color === Color.White ? 8n : -8n));
+          ~(
+            ((piece.position << (piece.color === Color.White ? 8n : -8n)) &
+              (opponentColorPieces | ownColorPieces)) <<
+            (piece.color === Color.White ? 8n : -8n)
+          );
       }
       break;
 
@@ -163,4 +178,35 @@ export const get_possible_moves = (piece: Piece, onlyAttacks: boolean): Bitboard
   }
 
   return moves & ~ownColorPieces & 0xffffffffffffffffn;
+};
+
+/**
+ * Check if rochade is possible for a given color
+ *
+ * @param color the color to check rochade for
+ * @returns a tuple of booleans indicating whether long and short rochade are possible, respectively
+ */
+export const rochade_possible = (
+  color: (typeof Color)[keyof typeof Color],
+): [boolean, boolean] => {
+  let maskShort: Bitboard = 0b1100000n;
+  let maskLong: Bitboard = 0b1110n;
+
+  if (color === Color.Black) {
+    maskLong <<= 56n;
+    maskShort <<= 56n;
+  }
+
+  const ownColorPieces = get_pieces(color)
+    .map((p) => p.position)
+    .reduce((a, b) => a | b, 0n);
+
+  const attacks = get_opponent_pieces(color)
+    .map((piece) => get_possible_moves(piece, true))
+    .reduce((a, b) => a | b, 0n);
+
+  return [
+    (maskLong & (attacks | ownColorPieces)) === 0n,
+    (maskShort & (attacks | ownColorPieces)) === 0n,
+  ];
 };

@@ -1,4 +1,4 @@
-import { get_xy, o2trick, reverse_bits, type Bitboard } from "./bitboard";
+import { get_lastbit, get_xy, o2trick, reverse_bits, type Bitboard } from "./bitboard";
 import { Color, PieceType, type Piece } from "../components/piece";
 import { get_opponent_pieces, get_pieces } from "../gamestate";
 
@@ -10,11 +10,12 @@ const FILE_1: Bitboard = 0x00000000000000ffn;
 const FILE_8: Bitboard = 0xff00000000000000n;
 
 const rock_moves = (
-  x: number,
-  y: number,
   pieces: Bitboard,
   piece: Bitboard,
 ): Bitboard => {
+  const x = get_xy(piece)[0];
+  const y = get_xy(piece)[1];
+
   const maskH = FILE_A << BigInt(x);
   const maskV = FILE_1 << BigInt(y * 8);
 
@@ -31,11 +32,12 @@ const rock_moves = (
 };
 
 const bishop_moves = (
-  x: number,
-  y: number,
   pieces: Bitboard,
   piece: Bitboard,
 ): Bitboard => {
+  const x = get_xy(piece)[0];
+  const y = get_xy(piece)[1];
+
   let maskRD = 0x8040201008040201n << BigInt(x - y);
   let maskRD2 = maskRD;
 
@@ -65,7 +67,7 @@ const bishop_moves = (
 };
 
 /**
- * Get the possible moves for a single piece
+ * Get the possible moves for piece(s)
  *
  * @param piece the piece to get the possible moves for
  * @param onlyAttacks whether to only consider attacking moves
@@ -75,8 +77,6 @@ export const get_possible_moves = (
   piece: Piece,
   onlyAttacks: boolean,
 ): Bitboard => {
-  const x = get_xy(piece.position)[0];
-  const y = get_xy(piece.position)[1];
 
   let moves: Bitboard;
 
@@ -89,19 +89,25 @@ export const get_possible_moves = (
     .reduce((a, b) => a | b, 0n);
 
   switch (piece.type) {
-    case PieceType.Pawn:
-      moves = onlyAttacks
-        ? 0n
-        : (piece.position << (piece.color === Color.White ? 8n : -8n)) &
-          ~opponentColorPieces;
+    case PieceType.Pawn: {
+      const pawn_opponent = onlyAttacks ? ~ownColorPieces : opponentColorPieces;
+      const y = get_xy(piece.position)[1];
 
       var attacks =
         ((piece.position << (piece.color === Color.White ? 7n : -9n)) &
           ~FILE_H &
-          opponentColorPieces) |
+          pawn_opponent) |
         ((piece.position << (piece.color === Color.White ? 9n : -7n)) &
           ~FILE_A &
-          opponentColorPieces);
+          pawn_opponent);
+
+      if (onlyAttacks) {
+        moves = attacks;
+        break;
+      }
+
+      moves = piece.position << (piece.color === Color.White ? 8n : -8n) &
+          ~opponentColorPieces;
 
       moves |= attacks;
 
@@ -119,8 +125,9 @@ export const get_possible_moves = (
           );
       }
       break;
+    }
 
-    case PieceType.Knight:
+    case PieceType.Knight: {
       moves =
         ((piece.position << 17n) & ~FILE_A) |
         ((piece.position << 15n) & ~FILE_H) |
@@ -131,37 +138,61 @@ export const get_possible_moves = (
         ((piece.position >> 10n) & ~FILE_GH) |
         ((piece.position >> 6n) & ~FILE_AB);
       break;
+    }
 
-    case PieceType.Queen:
-      moves =
-        rock_moves(x, y, opponentColorPieces | ownColorPieces, piece.position) |
-        bishop_moves(
-          x,
-          y,
+    case PieceType.Queen: {
+      let pos = piece.position;
+      moves = 0n;
+
+      while (pos !== 0n) {
+        const single_pos = get_lastbit(pos);
+
+        moves |= 
+        rock_moves(
           opponentColorPieces | ownColorPieces,
-          piece.position,
+          single_pos,
+        ) | 
+        bishop_moves(
+          opponentColorPieces | ownColorPieces,
+          single_pos,
         );
-      break;
 
-    case PieceType.Rook:
-      moves = rock_moves(
-        x,
-        y,
-        opponentColorPieces | ownColorPieces,
-        piece.position,
-      );
+        pos &= ~single_pos;
+      }
       break;
+    }
 
-    case PieceType.Bishop:
-      moves = bishop_moves(
-        x,
-        y,
-        opponentColorPieces | ownColorPieces,
-        piece.position,
-      );
+    case PieceType.Rook: {
+      let pos = piece.position;
+      moves = 0n;
+
+      while (pos !== 0n) {
+        const single_pos = get_lastbit(pos);
+        moves |= rock_moves(
+          opponentColorPieces | ownColorPieces,
+          single_pos,
+        );
+        pos &= ~single_pos;
+      }
       break;
+    }
 
-    case PieceType.King:
+    case PieceType.Bishop: {
+      let pos = piece.position;
+      moves = 0n;
+
+      while (pos !== 0n) {
+        const single_pos = get_lastbit(pos);
+        moves |= bishop_moves(
+          opponentColorPieces | ownColorPieces,
+          single_pos,
+        );
+        pos &= ~single_pos;
+      }
+      break;
+    }
+
+    case PieceType.King: {
       moves =
         ((piece.position << 8n) & ~FILE_1) |
         ((piece.position >> 8n) & ~FILE_8) |
@@ -172,6 +203,7 @@ export const get_possible_moves = (
         ((piece.position >> 9n) & ~FILE_8 & ~FILE_H) |
         ((piece.position >> 7n) & ~FILE_8 & ~FILE_A);
       break;
+    }
 
     default:
       return 0n;
